@@ -21,7 +21,12 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
     // Optionally, get more helpful error messages written to the console in the case of a panic.
     utils::set_panic_hook();
 
-    let ws = WebSocket::connect("wss://socketsbay.com/wss/v2/1/demo/".parse()?).await?;
+    let ws_res = WebSocket::connect("wss://socketsbay.com/wss/v2/1/demo/".parse()?).await;
+
+    let ws = match ws_res {
+        Ok(ws) => ws,
+        Err(e) => return Response::error(format!("failed to connect to websocket, {:?}", e), 500),
+    };
 
     // It's important that we call this before we send our first message, otherwise we will
     // not have any event listeners on the socket to receive the echoed message.
